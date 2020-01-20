@@ -1,4 +1,4 @@
-# udacity-1-data-modeling
+# udacity-1.1-data-modeling-postgres
 
 ## Project: Data Modeling with Postgres
 
