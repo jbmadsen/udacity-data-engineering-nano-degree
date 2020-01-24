@@ -10,7 +10,7 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 
 songplay_table_create = ("""
 CREATE TABLE IF NOT EXISTS songplays (
-    songplay_id INT NOT NULL, 
+    songplay_id BIGSERIAL PRIMARY KEY, 
     start_time BIGINT, 
     user_id INT, 
     level VARCHAR, 
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS songplays (
 
 user_table_create = ("""
 CREATE TABLE IF NOT EXISTS users (
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     first_name VARCHAR,
     last_name VARCHAR,
     gender VARCHAR,
@@ -36,17 +36,17 @@ CREATE TABLE IF NOT EXISTS users (
 # {"num_songs": 1, "artist_id": "ARJIE2Y1187B994AB7", "artist_latitude": null, "artist_longitude": null, "artist_location": "", "artist_name": "Line Renaud", "song_id": "SOUPIRU12A6D4FA1E1", "title": "Der Kleine Dompfaff", "duration": 152.92036, "year": 0}
 song_table_create = ("""
 CREATE TABLE IF NOT EXISTS songs (
-    song_id VARCHAR NOT NULL, 
+    song_id VARCHAR NOT NULL UNIQUE, 
     title VARCHAR,
     artist_id VARCHAR,
     year INT,
-    duration real
+    duration DECIMAL
 );
 """)
 
 artist_table_create = ("""
 CREATE TABLE IF NOT EXISTS artists (
-    artist_id VARCHAR NOT NULL, 
+    artist_id VARCHAR NOT NULL UNIQUE, 
     name VARCHAR,
     location VARCHAR,
     latitude real,
@@ -69,24 +69,79 @@ CREATE TABLE IF NOT EXISTS time (
 # INSERT RECORDS
 
 songplay_table_insert = ("""
+INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+VALUES
+    (%s, %s, %s, %s, %s, %s, %s, %s) 
+ON CONFLICT (songplay_id) 
+DO UPDATE
+    SET songplay_id = EXCLUDED.songplay_id,
+        start_time = EXCLUDED.start_time, 
+        user_id = EXCLUDED.user_id,
+        level = EXCLUDED.level,
+        song_id = EXCLUDED.song_id,
+        artist_id = EXCLUDED.artist_id,
+        session_id = EXCLUDED.session_id,
+        location = EXCLUDED.location,
+        user_agent = EXCLUDED.user_agent;
 """)
 
 user_table_insert = ("""
+INSERT INTO users (user_id, first_name, last_name, gender, level)
+VALUES
+    (%s, %s, %s, %s, %s) 
+ON CONFLICT (user_id) 
+DO UPDATE
+    SET user_id = EXCLUDED.user_id,
+        first_name = EXCLUDED.first_name,
+        last_name = EXCLUDED.last_name,
+        gender = EXCLUDED.gender,
+        level = EXCLUDED.level;
 """)
 
 song_table_insert = ("""
+INSERT INTO songs (song_id, title, artist_id, year, duration)
+VALUES
+    (%s, %s, %s, %s, %s) 
+ON CONFLICT (song_id) 
+DO UPDATE
+    SET song_id = EXCLUDED.song_id,
+        title = EXCLUDED.title,
+        artist_id = EXCLUDED.artist_id,
+        year = EXCLUDED.year,
+        duration = EXCLUDED.duration;
 """)
 
 artist_table_insert = ("""
+INSERT INTO artists (artist_id, name, location, latitude, longitude)
+VALUES
+    (%s, %s, %s, %s, %s) 
+ON CONFLICT (artist_id) 
+DO UPDATE
+    SET artist_id = EXCLUDED.artist_id,
+        name = EXCLUDED.name,
+        location = EXCLUDED.location,
+        latitude = EXCLUDED.latitude,
+        longitude = EXCLUDED.longitude;
 """)
 
 
 time_table_insert = ("""
+INSERT INTO time (start_time, hour, day, week, month, year, weekday)
+VALUES
+    (%s, %s, %s, %s, %s, %s, %s)
 """)
 
 # FIND SONGS
 
 song_select = ("""
+SELECT s.song_id, s.artist_id
+FROM songs s
+LEFT JOIN artists a ON a.artist_id = s.artist_id
+WHERE s.title = %(song)s
+    and a.name = %(artist)s
+    and round(s.duration::numeric, 3) = round(%(length)s::numeric, 3)
+    --and s.duration = %(length)s 
+LIMIt 1;
 """)
 
 # QUERY LISTS
