@@ -10,9 +10,8 @@ A project introduction can be found [here](./INTRODUCTION.md).
 
 # Context 
 
-A startup called Sparkify wants to analyze the data they've been collecting on songs and user activity on their new music streaming app. The analytics team is particularly interested in understanding what songs users are listening to. Currently, they don't have an easy way to query their data, which resides in a directory of JSON logs on user activity on the app, as well as a directory with JSON metadata on the songs in their app.
-
-The database created serves the purpose of housing the data that currently is only available through collected log files. The tables in the database serves to map the relation between the user activity and the song and artists being listened to.
+The startup Sparkify wants to analyze song and user activity data collected from their new music streaming app. They are interested in gaining insights into what song users are listening to. Currently this information is stored in JSON log files seperated into a directory for songs, and one for user activity logs.
+The database created serves the purpose of housing the data that currently is only available through these collected log files. The tables in the database serves to map the relation between the user activity and the song and artists being listened to.
 
 Such a database design should allow Sparkifys analytical team to easily see relations between user activity and songs, and thus give a better understand of their users listening habits. 
 
