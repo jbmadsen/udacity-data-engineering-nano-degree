@@ -11,11 +11,11 @@ time_table_drop = "DROP TABLE IF EXISTS time"
 songplay_table_create = ("""
 CREATE TABLE IF NOT EXISTS songplays (
     songplay_id BIGSERIAL PRIMARY KEY, 
-    start_time BIGINT, --REFERENCES time(start_time),
-    user_id INT NOT NULL,-- REFERENCES users(user_id), 
+    start_time BIGINT REFERENCES time(start_time) ON DELETE NO ACTION,
+    user_id INT NOT NULL  REFERENCES users(user_id) ON DELETE NO ACTION, 
     level VARCHAR, 
-    song_id VARCHAR,-- REFERENCES songs(song_id), 
-    artist_id VARCHAR,-- REFERENCES artists(artist_id), 
+    song_id VARCHAR REFERENCES songs(song_id) ON DELETE NO ACTION, 
+    artist_id VARCHAR REFERENCES artists(artist_id) ON DELETE NO ACTION, 
     session_id INT, 
     location VARCHAR, 
     user_agent VARCHAR
@@ -36,7 +36,7 @@ song_table_create = ("""
 CREATE TABLE IF NOT EXISTS songs (
     song_id VARCHAR PRIMARY KEY, 
     title VARCHAR,
-    artist_id VARCHAR NOT NULL,-- REFERENCES artists(artist_id),
+    artist_id VARCHAR NOT NULL REFERENCES artists(artist_id) ON DELETE NO ACTION,
     year INT,
     duration DECIMAL
 );
@@ -158,5 +158,5 @@ LIMIt 1;
 
 # QUERY LISTS
 
-create_table_queries = [songplay_table_create, user_table_create, song_table_create, artist_table_create, time_table_create]
-drop_table_queries = [songplay_table_drop, user_table_drop, song_table_drop, artist_table_drop, time_table_drop]
+create_table_queries = [artist_table_create, user_table_create, song_table_create, time_table_create, songplay_table_create]
+drop_table_queries = [artist_table_drop, user_table_drop, song_table_drop, time_table_drop, songplay_table_drop]

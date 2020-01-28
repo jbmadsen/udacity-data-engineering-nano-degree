@@ -79,7 +79,7 @@ python create_tables.py
 This connects to the default 'studentdb' database, and drops any existing database 'sparkifydb' if one exists, and creates a new one of that name. 
 It then disconnects from 'studentdb' and connects to 'sparkifydb', where it drops all tables for the facts and dimensions described in [sql_queries.py](./sql_queries.py), and re-creates the tables from the create statements in [sql_queries.py](./sql_queries.py), and closes the connection.
 
-With any luck, this will complete successfully, and the ETL process can be run by typing:
+Once this completes successfully, the ETL process can be run by typing:
 
 ```sh
 python etl.py
@@ -121,4 +121,25 @@ FROM songplays
 GROUP BY user_id, session_id
 ORDER BY count(session_id) DESC
 LIMIT 10
+```
+
+```sql
+/* Get user and session information for all listens where artist and song are related in fact and dimensional tables */
+SELECT 
+    sp.user_id,
+    sp.session_id,
+    u.first_name,
+    u.last_name,
+    u.level,
+    a.name,
+    s.title,
+    s.duration,
+    to_char(to_timestamp(t.start_time / 1000), 'DD Mon YYYY HH24:MI:SS') as start_time
+FROM songplays sp
+LEFT JOIN songs s ON s.song_id = sp.song_id
+LEFT JOIN artists a ON a.artist_id = sp.artist_id
+LEFT JOIN users u ON u.user_id = sp.user_id
+LEFT JOIN time t ON t.start_time = sp.start_time
+WHERE sp.artist_id IS NOT NULL 
+    AND sp.song_id IS NOT NULL
 ```
