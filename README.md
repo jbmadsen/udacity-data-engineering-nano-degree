@@ -8,7 +8,7 @@ Learn to build data infrastructure, an essential skill in Data Engineering. Desi
 ## Data Modeling
 
 * Project: [Data Modeling with Postgres](./udacity-1.1-data-modeling-postgres/)
-* Project: Data Modeling with Apache Cassandra 
+* Project: [Data Modeling with Apache Cassandra](./udacity-1.2-data-modeling-cassandra/)
 
 
 ## Cloud Data Warehouses
