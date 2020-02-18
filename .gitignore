@@ -1,3 +1,6 @@
+# Configs
+/udacity-3-data-warehouse/dwh-ioc.cfg
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
