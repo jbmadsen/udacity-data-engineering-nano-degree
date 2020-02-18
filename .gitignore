@@ -1,5 +1,5 @@
 # Configs
-/udacity-3-data-warehouse/dwh-ioc.cfg
+udacity-3-data-warehouse/dwh-ioc.cfg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -130,3 +130,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Other
