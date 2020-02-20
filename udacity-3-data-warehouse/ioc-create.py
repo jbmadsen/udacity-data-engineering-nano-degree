@@ -1,48 +1,225 @@
 # Load in all required libraries
 import pandas as pd 
 import boto3
+import botocore.exceptions
 import json
 import configparser
+import time
 
 
 # Open and read the contents of the config file
-config = configparser.ConfigParser()
-config.read_file(open('./dwh-ioc.cfg'))
+ioc_config = configparser.ConfigParser()
+ioc_config.read_file(open('./dwh-ioc.cfg'))
 
 # Load all the keys needed to create AWS services
-KEY                    = config.get('AWS','KEY')
-SECRET                 = config.get('AWS','SECRET')
+KEY                    = ioc_config.get('AWS','KEY')
+SECRET                 = ioc_config.get('AWS','SECRET')
 
-DWH_REGION             = config.get("DWH","DWH_REGION")
-DWH_CLUSTER_TYPE       = config.get("DWH","DWH_CLUSTER_TYPE")
-DWH_NUM_NODES          = config.get("DWH","DWH_NUM_NODES")
-DWH_NODE_TYPE          = config.get("DWH","DWH_NODE_TYPE")
+DWH_REGION             = ioc_config.get("DWH","DWH_REGION")
+DWH_CLUSTER_TYPE       = ioc_config.get("DWH","DWH_CLUSTER_TYPE")
+DWH_NUM_NODES          = ioc_config.get("DWH","DWH_NUM_NODES")
+DWH_NODE_TYPE          = ioc_config.get("DWH","DWH_NODE_TYPE")
 
-DWH_CLUSTER_IDENTIFIER = config.get("DWH","DWH_CLUSTER_IDENTIFIER")
-DWH_DB                 = config.get("DWH","DWH_DB")
-DWH_DB_USER            = config.get("DWH","DWH_DB_USER")
-DWH_DB_PASSWORD        = config.get("DWH","DWH_DB_PASSWORD")
-DWH_PORT               = config.get("DWH","DWH_PORT")
+DWH_CLUSTER_IDENTIFIER = ioc_config.get("DWH","DWH_CLUSTER_IDENTIFIER")
+DWH_DB                 = ioc_config.get("DWH","DWH_DB")
+DWH_DB_USER            = ioc_config.get("DWH","DWH_DB_USER")
+DWH_DB_PASSWORD        = ioc_config.get("DWH","DWH_DB_PASSWORD")
+DWH_PORT               = ioc_config.get("DWH","DWH_PORT")
 
-DWH_IAM_ROLE_NAME      = config.get("DWH", "DWH_IAM_ROLE_NAME")
+DWH_IAM_ROLE_NAME      = ioc_config.get("DWH", "DWH_IAM_ROLE_NAME")
 
 
 def create_client(name, func):
+    """Creating resources/clients for all needed infrastructure: EC2, S3, IAM, Redshift
+
+    Keyword arguments:
+    name -- the name of the AWS service resource/client 
+    func -- the boto3 function object (e.g. boto3.resource/boto3.client) 
+    """
+    print("Creating client for", name)
     return func(name,
                 region_name=DWH_REGION,
                 aws_access_key_id=KEY,
                 aws_secret_access_key=SECRET)
 
 
+def create_iam_role(iam):
+    """Creating IAM role for Redshift, allowing it to use AWS services
+    
+    Keyword arguments:
+    iam -- a boto3.client for IAM
+    """
+    print("Creating a new IAM Role") 
+    try:
+        resp = iam.create_role(Path='/',
+                               RoleName=DWH_IAM_ROLE_NAME,
+                               Description = "Allows Redshift clusters to call AWS services on your behalf.",
+                               AssumeRolePolicyDocument=json.dumps({'Statement': [{'Action': 'sts:AssumeRole',
+                                                                                   'Effect': 'Allow',
+                                                                                   'Principal': {'Service': 'redshift.amazonaws.com'}}],
+                                                                    'Version': '2012-10-17'}
+                                                                  )
+                              )
+        print("IAM Role created")
+    except iam.exceptions.EntityAlreadyExistsException:
+        print("IAM Role already created")
+    except Exception as e:
+        print("Error creating IAM Role:", e)
+
+        
+def create_arn_role(iam):
+    """Attaching policy to role, and return the ARN role 
+    
+    Keyword arguments:
+    iam -- a boto3.client for IAM
+    """
+    print("Attaching policy to IAM role")
+    iam.attach_role_policy(RoleName=DWH_IAM_ROLE_NAME,
+                           PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess")['ResponseMetadata']['HTTPStatusCode']
+    roleArn = iam.get_role(RoleName=DWH_IAM_ROLE_NAME)['Role']['Arn']
+    #print("ARN role:", roleArn)
+    return roleArn
+
+
+def create_redshift_cluster(redshift, roleArn):
+    """Creates Redshift cluster (Warning, this costs money - make sure to use it or delete it again!)
+    
+    Keyword arguments:
+    iam     -- a boto3.client for Redshift
+    roleArn -- a role arn for reading from S3
+    """
+    cluster = redshift.create_cluster(
+        #Hardware provisioned
+        ClusterType=DWH_CLUSTER_TYPE,
+        NodeType=DWH_NODE_TYPE,
+        NumberOfNodes=int(DWH_NUM_NODES),
+
+        #Identifiers & Credentials
+        DBName=DWH_DB,
+        ClusterIdentifier=DWH_CLUSTER_IDENTIFIER,
+        MasterUsername=DWH_DB_USER,
+        MasterUserPassword=DWH_DB_PASSWORD,
+
+        #Roles (for s3 access)
+        IamRoles=[roleArn]  
+    )
+    return cluster
+
+
+def query_redshift_status(redshift):
+    """Query status of the cluster, returns once cluster is available
+    
+    Keyword arguments:
+    iam -- a boto3.client for Redshift
+    """
+    def prettyRedshiftProps(props, limited = True):
+        #pd.set_option('display.max_colwidth', -1)
+        if limited:
+            keysToShow = ["ClusterStatus"]
+        else:
+            keysToShow = ["ClusterIdentifier", "NodeType", "ClusterStatus", "MasterUsername", "DBName", "Endpoint", "NumberOfNodes", 'VpcId']
+        x = [(k, v) for k,v in props.items() if k in keysToShow]
+        return pd.DataFrame(data=x, columns=["Key", "Value"])
+
+    # Print status, sleep if not available, try again
+    while True:
+        myClusterProps = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
+        df = prettyRedshiftProps(myClusterProps, limited=True)
+        print(df.values)
+        if myClusterProps['ClusterStatus'] == 'available':
+            break
+        time.sleep(20) # Sleep 20 seconds, and look again, untill cluster becomes available
+
+    # Print full details once cluster is available
+    df = prettyRedshiftProps(myClusterProps, limited=False)
+    print(df)
+
+    
+def get_redshift_endpoint_info(redshift):
+    """Get endpoint and ARN role for cluster
+    
+    Keyword arguments:
+    iam -- a boto3.client for Redshift
+    """
+    cluster_properties = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
+
+    DWH_ENDPOINT = myClusterProps['Endpoint']['Address']
+    DWH_ROLE_ARN = myClusterProps['IamRoles'][0]['IamRoleArn']
+    #print("DWH_ENDPOINT:", DWH_ENDPOINT)
+    #print("DWH_ROLE_ARN:", DWH_ROLE_ARN)
+    return (DWH_ENDPOINT, DWH_ROLE_ARN)
+
+
+def update_cluster_security_group(ec2):
+    """Update cluster security group to allow access through redshift port
+    
+    Keyword arguments:
+    iam -- a boto3.resource for EC2
+    """
+    vpc = ec2.Vpc(id=myClusterProps['VpcId'])
+
+    # The first Security group should be the default one
+    defaultSg = list(vpc.security_groups.all())[0]
+    print("Default Security group:", defaultSg)
+
+    # Authorize access
+    try:
+        defaultSg.authorize_ingress(GroupName=defaultSg.group_name,
+                                    CidrIp='0.0.0.0/0',
+                                    IpProtocol='TCP',
+                                    FromPort=int(DWH_PORT),
+                                    ToPort=int(DWH_PORT)
+                                   )
+        print("Access authorized")
+    except botocore.exceptions.ClientError as e:
+        print("ClientError:", e)
+    except Exception as e:
+        print("Error:", e)
+
+
+def test_connection():
+    """Test connection to created Redshift cluster to validate"""
+    import psycopg2
+
+    dwh_config = configparser.ConfigParser()
+    dwh_config.read_file(open('./dwh.cfg'))
+
+    try:
+        conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(*dwh_config['CLUSTER'].values()))
+
+        cur = conn.cursor()
+        print('Connected to AWS Redshift cluster')
+        conn.close()
+    except Exception as e:
+        print('Error connecting to AWS Redshift cluster:', e)
+
+        
 def main():
+    """Standing up a Redshift cluster and saves connection information to dwh.cfg"""
+    
     # Creating resources/clients for all needed infrastructure: EC2, S3, IAM, Redshift
     ec2 = create_client('ec2', boto3.resource)
     s3 = create_client('s3', boto3.resource)
     iam = create_client('iam', boto3.client)
     redshift = create_client('redshift', boto3.client)
     
+    create_iam_role(iam)
+    
+    arn_role = create_arn_role(iam)
+    
+    cluster = create_redshift_cluster(redshift, arn_role)
+        
+    query_redshift_status(redshift)
+    
+    info = get_redshift_endpoint_info(redshift)
+    # TODO: Save info to dwh.cfg
+    
+    update_cluster_security_group(ec2)
+    
+    test_connection()
+    
     # End of main
-    pass
+    return
 
 
 if __name__ == "__main__":
