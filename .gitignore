@@ -1,6 +1,9 @@
 # Configs
 udacity-3-data-warehouse/dwh-ioc.cfg
 
+# VSCode
+.vscode/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
