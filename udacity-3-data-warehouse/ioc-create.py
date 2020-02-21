@@ -1,10 +1,16 @@
 # Load in all required libraries
+import os
+import sys
 import pandas as pd 
 import boto3
 import botocore.exceptions
 import json
 import configparser
 import time
+
+
+# Set path to current directory
+os.chdir(os.path.dirname(sys.argv[0]))
 
 
 # Open and read the contents of the config file
@@ -103,11 +109,12 @@ def create_redshift_cluster(redshift, roleArn):
         #Roles (for s3 access)
         IamRoles=[roleArn]  
     )
+    print("Creating Redshift cluster with", DWH_NUM_NODES, "nodes, on", DWH_REGION)
     return cluster
 
 
 def query_redshift_status(redshift):
-    """Query status of the cluster, returns once cluster is available
+    """Query status of the cluster, returns cluster properties once cluster is available
     
     Keyword arguments:
     iam -- a boto3.client for Redshift
@@ -123,40 +130,45 @@ def query_redshift_status(redshift):
 
     # Print status, sleep if not available, try again
     while True:
-        myClusterProps = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
-        df = prettyRedshiftProps(myClusterProps, limited=True)
+        cluster_props = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
+        df = prettyRedshiftProps(cluster_props, limited=True)
         print(df.values)
-        if myClusterProps['ClusterStatus'] == 'available':
+        if cluster_props['ClusterStatus'] == 'available':
             break
         time.sleep(20) # Sleep 20 seconds, and look again, untill cluster becomes available
 
     # Print full details once cluster is available
-    df = prettyRedshiftProps(myClusterProps, limited=False)
+    df = prettyRedshiftProps(cluster_props, limited=False)
     print(df)
 
+    # Return cluster properties
+    return cluster_props
+
     
-def get_redshift_endpoint_info(redshift):
+def get_redshift_endpoint_info(redshift, cluster_props):
     """Get endpoint and ARN role for cluster
     
     Keyword arguments:
-    iam -- a boto3.client for Redshift
+    iam           -- a boto3.client for Redshift
+    cluster_props -- cluster properties for the created Redshift cluster
     """
     cluster_properties = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
 
-    DWH_ENDPOINT = myClusterProps['Endpoint']['Address']
-    DWH_ROLE_ARN = myClusterProps['IamRoles'][0]['IamRoleArn']
+    DWH_ENDPOINT = cluster_props['Endpoint']['Address']
+    DWH_ROLE_ARN = cluster_props['IamRoles'][0]['IamRoleArn']
     #print("DWH_ENDPOINT:", DWH_ENDPOINT)
     #print("DWH_ROLE_ARN:", DWH_ROLE_ARN)
     return (DWH_ENDPOINT, DWH_ROLE_ARN)
 
 
-def update_cluster_security_group(ec2):
+def update_cluster_security_group(ec2, cluster_props):
     """Update cluster security group to allow access through redshift port
     
     Keyword arguments:
-    iam -- a boto3.resource for EC2
+    iam           -- a boto3.resource for EC2
+    cluster_props -- cluster properties for the created Redshift cluster
     """
-    vpc = ec2.Vpc(id=myClusterProps['VpcId'])
+    vpc = ec2.Vpc(id=cluster_props['VpcId'])
 
     # The first Security group should be the default one
     defaultSg = list(vpc.security_groups.all())[0]
@@ -209,12 +221,12 @@ def main():
     
     cluster = create_redshift_cluster(redshift, arn_role)
         
-    query_redshift_status(redshift)
+    cluster_props = query_redshift_status(redshift)
     
-    info = get_redshift_endpoint_info(redshift)
+    info = get_redshift_endpoint_info(redshift, cluster_props)
     # TODO: Save info to dwh.cfg
     
-    update_cluster_security_group(ec2)
+    update_cluster_security_group(ec2, cluster_props)
     
     test_connection()
     

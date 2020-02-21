@@ -1,3 +1,5 @@
+import os
+import sys
 import configparser
 import psycopg2
 from sql_queries import create_table_queries, drop_table_queries
@@ -29,4 +31,8 @@ def main():
 
 
 if __name__ == "__main__":
+
+    # Set path to current directory
+    os.chdir(os.path.dirname(sys.argv[0]))
+
     main()
