@@ -1,10 +1,16 @@
 # Load in all required libraries
+import os
+import sys
 import pandas as pd 
 import boto3
 import botocore.exceptions
 import json
 import configparser
 import time
+
+
+# Set path to current directory
+os.chdir(os.path.dirname(sys.argv[0]))
 
 
 # Open and read the contents of the config file
@@ -43,24 +49,38 @@ def create_client(name, func):
                 aws_secret_access_key=SECRET)
 
 
+def prettyRedshiftProps(props, limited = True):
+        #pd.set_option('display.max_colwidth', -1)
+        if limited:
+            keysToShow = ["ClusterStatus"]
+        else:
+            keysToShow = ["ClusterIdentifier", "NodeType", "ClusterStatus", "MasterUsername", "DBName", "Endpoint", "NumberOfNodes", 'VpcId']
+        x = [(k, v) for k,v in props.items() if k in keysToShow]
+        return pd.DataFrame(data=x, columns=["Key", "Value"])
+
+
 def main():
     """Destroying the Redshift cluster created with ioc-create.py"""
     
+    iam = create_client('iam', boto3.client)
     redshift = create_client('redshift', boto3.client)
     
     # Delete cluster (will take time)
     resp = redshift.delete_cluster(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER,   
                                    SkipFinalClusterSnapshot=True)
-    
+    print("Deleting Redshift cluster")
+
     # Query the status - I have no idea what the status will become after deletion, so no loop here
     myClusterProps = redshift.describe_clusters(ClusterIdentifier=DWH_CLUSTER_IDENTIFIER)['Clusters'][0]
-    prettyRedshiftProps(myClusterProps, limited=False)
+    df = prettyRedshiftProps(myClusterProps, limited=False)
+    print(df)
 
     # Detach and delete role, since there are no cluster to use this on
     detach_resp = iam.detach_role_policy(RoleName=DWH_IAM_ROLE_NAME, 
                            PolicyArn="arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess")
     delete_resp = iam.delete_role(RoleName=DWH_IAM_ROLE_NAME)
-
+    print("Detaching and deleting roles from cluster")
+    
     # TODO: Print status of these, wait for cluster to be deleted, and confirm
     
     # End of main
