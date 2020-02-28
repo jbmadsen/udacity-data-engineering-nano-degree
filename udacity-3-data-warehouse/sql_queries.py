@@ -3,6 +3,7 @@ import sys
 import configparser
 
 
+# Set path to current directory
 os.chdir(os.path.dirname(sys.argv[0]))
 
 
