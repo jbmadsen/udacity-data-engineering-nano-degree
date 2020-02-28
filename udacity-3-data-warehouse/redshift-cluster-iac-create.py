@@ -15,7 +15,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 
 # Open and read the contents of the config file
 ioc_config = configparser.ConfigParser()
-ioc_config.read_file(open('./dwh-ioc.cfg'))
+ioc_config.read_file(open('./dwh-iac.cfg'))
 
 # Load all the keys needed to create AWS services
 KEY                    = ioc_config.get('AWS','KEY')
@@ -135,7 +135,7 @@ def query_redshift_status(redshift):
         print(df.values)
         if cluster_props['ClusterStatus'] == 'available':
             break
-        time.sleep(20) # Sleep 20 seconds, and look again, untill cluster becomes available
+        time.sleep(60) # Sleep 60 seconds, and look again, untill cluster becomes available
 
     # Print full details once cluster is available
     df = prettyRedshiftProps(cluster_props, limited=False)

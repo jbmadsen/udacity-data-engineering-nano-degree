@@ -15,7 +15,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 
 # Open and read the contents of the config file
 ioc_config = configparser.ConfigParser()
-ioc_config.read_file(open('./dwh-ioc.cfg'))
+ioc_config.read_file(open('./dwh-iac.cfg'))
 
 # Load all the keys needed to create AWS services
 KEY                    = ioc_config.get('AWS','KEY')
