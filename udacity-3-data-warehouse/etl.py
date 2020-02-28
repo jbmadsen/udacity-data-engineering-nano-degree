@@ -10,8 +10,8 @@ def load_staging_tables(cur, conn):
     Imports S3 data into staging tables described by the copy_table_queries list of queries loaded from sql_queries.py
     
     Input:
-    conn:   The connection to the database
     cur:    Cursor object created by the database connection
+    conn:   The connection to the database
     """
     print("Loading into staging tables")
     for query in copy_table_queries:
@@ -24,8 +24,8 @@ def insert_tables(cur, conn):
     Inserts data into tables described by the insert_table_queries list of queries loaded from sql_queries.py
     
     Input:
-    conn:   The connection to the database
     cur:    Cursor object created by the database connection
+    conn:   The connection to the database
     """
     print("Inserting into tables")
     for query in insert_table_queries:

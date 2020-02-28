@@ -10,8 +10,8 @@ def drop_tables(cur, conn):
     Drops the tables described by the drop_table_queries list of queries loaded from sql_queries.py
     
     Input:
-    conn:   The connection to the database
     cur:    Cursor object created by the database connection
+    conn:   The connection to the database
     """
     print("Dropping tables")
 
@@ -25,8 +25,8 @@ def create_tables(cur, conn):
     Creates the tables described by the create_table_queries list of queries loaded from sql_queries.py
     
     Input:
-    conn:   The connection to the database
     cur:    Cursor object created by the database connection
+    conn:   The connection to the database
     """
     print("Creating tables")
 
