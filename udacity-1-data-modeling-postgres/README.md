@@ -10,7 +10,7 @@ A project introduction can be found [here](./INTRODUCTION.md).
 
 # Context 
 
-The startup Sparkify wants to analyze song and user activity data collected from their new music streaming app. They are interested in gaining insights into what song users are listening to. Currently this information is stored in JSON log files seperated into a directory for songs, and one for user activity logs.
+The startup Sparkify wants to analyze song and user activity data collected from their new music streaming app. They are interested in gaining insights into what song users are listening to. Currently this information is stored in JSON log files separated into a directory for songs, and one for user activity logs.
 The database created serves the purpose of housing the data that currently is only available through these collected log files. The tables in the database serves to map the relation between the user activity and the song and artists being listened to.
 
 Such a database design should allow Sparkifys analytical team to easily see relations between user activity and songs, and thus give a better understand of their users listening habits. 
@@ -46,7 +46,7 @@ Such a database design should allow Sparkifys analytical team to easily see rela
 
 For this exercise, a Star Schema is being used: A single main fact table containing measures for user activities (song plays) and related dimensional tables (songs, artists, users and time), each containing dimension keys, values and attributes related to the dimension.
 
-The reasoning for using a Star Schema with facts and dimensions is to seperate measurable, quantitative data (in the fact) and descriptive attributes related to this fata (in the dimensions). 
+The reasoning for using a Star Schema with facts and dimensions is to separate measurable, quantitative data (in the fact) and descriptive attributes related to this sata (in the dimensions). 
 
 Furthermore, we know the structure of the JSON files, and how to extract data from these, making a relational database suitable for this type of workflow, and the data needed to answer business questions described in the previous section can be modeled using ERD models. 
 
