@@ -18,7 +18,7 @@ Learn to build data infrastructure, an essential skill in Data Engineering. Desi
 
 ## Data Lakes with Spark
 
-* Project: Data Lake
+* Project: [Data Lake with Spark](./udacity-4-data-lakes-with-spark/)
 
 
 ## Data Pipelines with Airflow
