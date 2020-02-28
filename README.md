@@ -1,5 +1,7 @@
 # Data Engineer Nano-degree Program
 
+Link: [Udacity program page](https://www.udacity.com/course/data-engineer-nanodegree--nd027)
+
 ## Objective
 
 Learn to build data infrastructure, an essential skill in Data Engineering. Design data models, build data warehouses and data lakes, automate data pipelines, and work with Big Data.
