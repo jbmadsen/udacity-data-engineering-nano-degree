@@ -1,5 +1,7 @@
-import os, sys
+import os
+import sys
 import configparser
+
 
 os.chdir(os.path.dirname(sys.argv[0]))
 
@@ -131,13 +133,17 @@ SORTKEY (start_time);
 
 staging_events_copy = ("""
 COPY staging_events
-FROM {data} iam_role {role_arn}
+FROM {data} 
+IAM_ROLE {role_arn}
+REGION 'us-west-2' 
 FORMAT AS json {json};
 """).format(data=config['S3']['LOG_DATA'], role_arn=config['IAM_ROLE']['ARN'], json=config['S3']['LOG_JSONPATH'])
 
 staging_songs_copy = ("""
 COPY staging_songs
-FROM {data} iam_role {role_arn}
+FROM {data} 
+IAM_ROLE {role_arn}
+REGION 'us-west-2' 
 FORMAT AS json 'auto';
 """).format(data=config['S3']['SONG_DATA'], role_arn=config['IAM_ROLE']['ARN'])
 
