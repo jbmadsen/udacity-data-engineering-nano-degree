@@ -17,6 +17,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 ioc_config = configparser.ConfigParser()
 ioc_config.read_file(open('./dwh-iac.cfg'))
 
+
 # Load all the keys needed to create AWS services
 KEY                    = ioc_config.get('AWS','KEY')
 SECRET                 = ioc_config.get('AWS','SECRET')
