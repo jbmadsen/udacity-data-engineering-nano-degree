@@ -14,6 +14,9 @@ os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS_SECRET_ACCESS_KEY']
 
 
 def create_spark_session():
+    """
+    Creates a spark session, or retrieve a matching one if it exists
+    """
     spark = SparkSession \
         .builder \
         .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0") \
@@ -22,6 +25,14 @@ def create_spark_session():
 
 
 def process_song_data(spark, input_data, output_data):
+    """
+    Loads data from S3, processes it to songs and artist tables, which are saved back to S3
+    
+    Input:
+    spark:          A SparkSession instance
+    input_data:     location of the json files for processing
+    output_data:    S3 bucket for outputting dimensional data in parquet format
+    """
     # get filepath to song data file
     song_data = 
     
@@ -42,6 +53,14 @@ def process_song_data(spark, input_data, output_data):
 
 
 def process_log_data(spark, input_data, output_data):
+    """
+    Loads data from S3, processes it to event tables, which are saved back to S3
+    
+    Input:
+    spark:          A SparkSession instance
+    input_data:     location of the json files for processing
+    output_data:    S3 bucket for outputting dimensional data in parquet format
+    """
     # get filepath to log data file
     log_data =
 
@@ -82,6 +101,11 @@ def process_log_data(spark, input_data, output_data):
 
 
 def main():
+    """
+    Loads songs and event data from S3, 
+    transforms this data to dimensional tables format, 
+    and saves it back to S3 in Parquet format
+    """
     spark = create_spark_session()
     input_data = "s3a://udacity-dend/"
     output_data = ""
