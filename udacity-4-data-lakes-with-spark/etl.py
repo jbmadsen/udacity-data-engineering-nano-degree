@@ -1,23 +1,25 @@
 import configparser
 from datetime import datetime
 import os
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import udf, col
-from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
+import pyspark.sql as Spark
+import pyspark.sql.functions as F
+import pyspark.sql.types as T
+#from pyspark.sql.functions import udf, col
+#from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
 
 
 config = configparser.ConfigParser()
 config.read('dl.cfg')
 
-os.environ['AWS_ACCESS_KEY_ID']=config['AWS_ACCESS_KEY_ID']
-os.environ['AWS_SECRET_ACCESS_KEY']=config['AWS_SECRET_ACCESS_KEY']
+os.environ['AWS_ACCESS_KEY_ID'] = config['AWS_ACCESS_KEY_ID']
+os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWS_SECRET_ACCESS_KEY']
 
 
 def create_spark_session():
     """
     Creates a spark session, or retrieve a matching one if it exists
     """
-    spark = SparkSession \
+    spark = Spark.SparkSession \
         .builder \
         .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:2.7.0") \
         .getOrCreate()
@@ -77,11 +79,11 @@ def process_log_data(spark, input_data, output_data):
     artists_table
 
     # create timestamp column from original timestamp column
-    get_timestamp = udf()
+    get_timestamp = F.udf()
     df = 
     
     # create datetime column from original timestamp column
-    get_datetime = udf()
+    get_datetime = F.udf()
     df = 
     
     # extract columns to create time table
