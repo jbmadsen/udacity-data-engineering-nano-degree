@@ -6,13 +6,7 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 #from pyspark.sql.functions import udf, col
 #from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
-
-
-config = configparser.ConfigParser()
-config.read('dl.cfg')
-
-os.environ['AWS_ACCESS_KEY_ID'] = config['AWS_ACCESS_KEY_ID']
-os.environ['AWS_SECRET_ACCESS_KEY'] = config['AWS_SECRET_ACCESS_KEY']
+from configs import KEY, SECRET
 
 
 def create_spark_session():
@@ -117,4 +111,13 @@ def main():
 
 
 if __name__ == "__main__":
+    """
+    Runs main function for this module: sets access credentials and calls main() function
+    """
+    config = configparser.ConfigParser()
+    config.read('./dl.cfg')
+
+    os.environ['AWS_ACCESS_KEY_ID'] = KEY
+    os.environ['AWS_SECRET_ACCESS_KEY'] = SECRET
+    
     main()
