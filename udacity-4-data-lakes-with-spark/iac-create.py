@@ -2,23 +2,12 @@ import os
 import sys
 import boto3
 from botocore.exceptions import ClientError
-import configparser
-
-
-def create_default_roles():
-    """
-    Creates EMR_DefaultRole and EMR_EC2_DefaultRole if they don't exist
-    """
-    iam = boto3.client('iam',
-                       region_name=DL_REGION, 
-                       aws_access_key_id=KEY,
-                       aws_secret_access_key=SECRET,)
-    pass
+from configs import KEY, SECRET, DL_REGION, DL_NODE_TYPE, DL_NUM_SLAVES, S3_BUCKET_LOGS
 
 
 def create_emr_cluster():
     """
-    Creates EMR cluster
+    Creates EMR cluster, if none exists already
     """
 
     # Creating resources/clients for infrastructure: EMR
@@ -27,6 +16,14 @@ def create_emr_cluster():
                        aws_access_key_id=KEY,
                        aws_secret_access_key=SECRET,)
 
+    # Get existing clusters
+    clusters = emr.list_clusters()
+
+    if clusters and clusters['Clusters']:
+        print("Cluster exists:", clusters['Clusters'])
+        return
+    else:
+        print("No clusters exists. Creating one.")
 
     # Creating cluster settings: InstanceGroups
     instance_groups = [
@@ -68,36 +65,23 @@ def create_emr_cluster():
             ServiceRole='EMR_DefaultRole'
         )
     except ClientError as ex:
-        print(ex)
+        print("ClientError:", ex)
+    except ConnectionRefusedError as ex:
+        print("ConnectionRefusedError:", ex)
+    except Exception as ex:
+        print("Exception:", ex) 
+    else:
+        # Everything went well, lets see if we can query the cluster
+        clusters = emr.list_clusters()
+        if clusters and clusters['Clusters']:
+            print("Creating Cluster:", clusters['Clusters'])
 
     return cluster 
 
 
 if __name__ == "__main__":
-    # Set path to current directory
-    os.chdir(os.path.dirname(sys.argv[0]))
-
-    # Open and read the contents of the keys file
-    iac_keys = configparser.ConfigParser()
-    iac_keys.read_file(open('./keys.cfg'))
-
-    # Load all the keys needed to connect to AWS services
-    KEY             = iac_keys.get('AWS','AWS_ACCESS_KEY_ID')
-    SECRET          = iac_keys.get('AWS','AWS_SECRET_ACCESS_KEY')
-
-    # Open and read the contents of the config file
-    iac_config = configparser.ConfigParser()
-    iac_config.read_file(open('./dl.cfg'))
-
-    # Load all the keys needed to create the EMR cluster
-    DL_REGION       = iac_config.get("DL","DL_REGION")
-    DL_NUM_SLAVES   = iac_config.get("DL","DL_NUM_SLAVES")
-    DL_NODE_TYPE    = iac_config.get("DL","DL_NODE_TYPE")
-
-    S3_BUCKET_LOGS  = iac_config.get("S3","S3_BUCKET_LOGS")
-
     # Create EMR cluster
     cluster = create_emr_cluster()
 
     if cluster is not None:
-        print("Creating cluster... I think?")
+        print("Creating cluster...")
