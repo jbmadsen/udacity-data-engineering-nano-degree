@@ -30,7 +30,8 @@ def process_song_data(spark, input_data, output_data):
     output_data:    S3 bucket for outputting dimensional data in parquet format
     """
     # get filepath to song data file
-    song_data = 
+    # Documentation example from Udacity: song_data/A/B/C/TRABCEI128F424C983.json
+    song_data = input_data + "song_data/*/*/*/*.json"
     
     # read song data file
     df = 
@@ -58,7 +59,8 @@ def process_log_data(spark, input_data, output_data):
     output_data:    S3 bucket for outputting dimensional data in parquet format
     """
     # get filepath to log data file
-    log_data =
+    # Documentation example from Udacity: log_data/2018/11/2018-11-12-events.json
+    log_data = input_data + "log_data/*/*/*.json"
 
     # read log data file
     df = 
