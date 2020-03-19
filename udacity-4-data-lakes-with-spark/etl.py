@@ -34,19 +34,22 @@ def process_song_data(spark, input_data, output_data):
     song_data = input_data + "song_data/*/*/*/*.json"
     
     # read song data file
-    df = 
+    df = spark.read.json(song_data, columnNameOfCorruptRecord='corrupt_record').drop_duplicates()
 
     # extract columns to create songs table
-    songs_table = 
+    songs_table = df.select("song_id","title","artist_id","year","duration").drop_duplicates()
     
     # write songs table to parquet files partitioned by year and artist
-    songs_table
+    songs_table.write.parquet(output_data + "songs/", 
+                              mode="overwrite",
+                              partitionBy=["year","artist_id"])
 
     # extract columns to create artists table
-    artists_table = 
+    artists_table = df.select("artist_id","artist_name","artist_location","artist_latitude","artist_longitude").drop_duplicates()
     
     # write artists table to parquet files
-    artists_table
+    artists_table.write.parquet(output_data + "artists/", 
+                                mode="overwrite")
 
 
 def process_log_data(spark, input_data, output_data):
