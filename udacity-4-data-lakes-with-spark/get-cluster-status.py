@@ -22,11 +22,12 @@ if __name__ == "__main__":
             print("Id:", cluster['Id'])
             print("Name:", cluster['Name'])
             print("Status:")
-            print("State:", cluster['Status']['State'])
-            print("StateChangeReason:", cluster['Status']['StateChangeReason'])
-            print("Timeline:")
-            print("Created:", cluster['Status']['Timeline']['CreationDateTime'])
-            print("Ended:", cluster['Status']['Timeline']['EndDateTime'])
+            print("  State:", cluster['Status']['State'])
+            print("  StateChangeReason:", cluster['Status']['StateChangeReason'])
+            print("  Timeline:")
+            print("    Created:", cluster['Status']['Timeline']['CreationDateTime'])
+            if 'EndDateTime' in cluster['Status']['Timeline']:
+                print("    Ended:", cluster['Status']['Timeline']['EndDateTime'])
             print("NormalizedInstanceHours:", cluster['NormalizedInstanceHours'])
             print("")
     else:

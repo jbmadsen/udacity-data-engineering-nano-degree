@@ -20,8 +20,11 @@ def create_emr_cluster():
     clusters = emr.list_clusters()
 
     if clusters and clusters['Clusters']:
-        print("Cluster exists:", clusters['Clusters'])
-        return
+        for cluster in clusters['Clusters']:
+            if (cluster['Status']['State'] != 'TERMINATED_WITH_ERRORS'):
+                print("Cluster exists:", cluster)
+                return
+        print("All found Clusters are terminated. We create a new one.")
     else:
         print("No clusters exists. Creating one.")
 
@@ -55,14 +58,14 @@ def create_emr_cluster():
             ],
             Instances={
                 'InstanceGroups': instance_groups,
-                'Ec2KeyName': '',
+                #'Ec2KeyName': '', # TODO
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
-                'Ec2SubnetId': 'subnet-id',
+                #'Ec2SubnetId': 'subnet-id', # TODO
             },
             VisibleToAllUsers=True,
             JobFlowRole='EMR_EC2_DefaultRole',
-            ServiceRole='EMR_DefaultRole'
+            ServiceRole='EMR_DefaultRole',
         )
     except ClientError as ex:
         print("ClientError:", ex)

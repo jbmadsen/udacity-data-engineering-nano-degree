@@ -6,7 +6,7 @@ import pyspark.sql.functions as F
 import pyspark.sql.types as T
 #from pyspark.sql.functions import udf, col
 #from pyspark.sql.functions import year, month, dayofmonth, hour, weekofyear, date_format
-from configs import KEY, SECRET
+from configs import KEY, SECRET, S3_BUCKET_OUT
 
 
 def create_spark_session():
@@ -104,7 +104,7 @@ def main():
     """
     spark = create_spark_session()
     input_data = "s3a://udacity-dend/"
-    output_data = ""
+    output_data = S3_BUCKET_OUT
     
     process_song_data(spark, input_data, output_data)    
     process_log_data(spark, input_data, output_data)
