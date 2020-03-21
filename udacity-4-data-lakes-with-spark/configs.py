@@ -24,6 +24,7 @@ DL_NUM_SLAVES   = iac_config.get("DL","DL_NUM_SLAVES")
 DL_NODE_TYPE    = iac_config.get("DL","DL_NODE_TYPE")
 
 S3_BUCKET_LOGS  = iac_config.get("S3","S3_BUCKET_LOGS")
+S3_BUCKET_OUT  = iac_config.get("S3","S3_BUCKET_OUT")
 
 # Delete unused objects
 del iac_keys
