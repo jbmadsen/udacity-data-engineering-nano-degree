@@ -66,30 +66,42 @@ def process_log_data(spark, input_data, output_data):
     log_data = input_data + "log_data/*/*/*.json"
 
     # read log data file
-    df = 
+    df = spark.read.json(log_data, 
+                         columnNameOfCorruptRecord='corrupt_record').drop_duplicates()
     
     # filter by actions for song plays
-    df = 
+    df = df.filter(df.page == "NextSong")
 
     # extract columns for users table    
-    artists_table = 
+    users_table = df.select("userId","firstName","lastName","gender","level").drop_duplicates()
     
     # write users table to parquet files
-    artists_table
+    users_table.write.parquet(output_data + "users/", 
+                              mode="overwrite")
 
     # create timestamp column from original timestamp column
-    get_timestamp = F.udf()
-    df = 
+    get_timestamp = F.udf(lambda x : datetime.utcfromtimestamp(int(x)/1000), T.TimestampType())
+    df = df.withColumn("start_time", get_timestamp('ts'))
     
     # create datetime column from original timestamp column
-    get_datetime = F.udf()
-    df = 
+    # get_datetime = F.udf()
+    # df = 
     
     # extract columns to create time table
-    time_table = 
+    time_table = df.withColumn("start_time", F.col("start_time")) \
+                   .withColumn("hour", F.hour(F.col("start_time"))) \
+                   .withColumn("day", F.dayofmonth(F.col("start_time"))) \
+                   .withColumn("week", F.weekofyear(F.col("start_time"))) \
+                   .withColumn("month", F.month(F.col("start_time"))) \
+                   .withColumn("year", F.year(F.col("start_time"))) \
+                   .withColumn("weekday", F.dayofweek(F.col("start_time"))) \
+                   .select("ts","start_time","hour", "day", "week", "month", "year", "weekday").drop_duplicates()
     
     # write time table to parquet files partitioned by year and month
-    time_table
+    # write time table to parquet files partitioned by year and month
+    time_table.write.parquet(output_data + "time/", 
+                            mode="overwrite",
+                            partitionBy=["year","month"])
 
     # read in song data to use for songplays table
     song_df = 
