@@ -21,7 +21,7 @@ def create_emr_cluster():
 
     if clusters and clusters['Clusters']:
         for cluster in clusters['Clusters']:
-            if (cluster['Status']['State'] != 'TERMINATED_WITH_ERRORS'):
+            if (cluster['Status']['State'] not in ['TERMINATED', 'TERMINATED_WITH_ERRORS']):
                 print("Cluster exists:", cluster)
                 return
         print("All found Clusters are terminated. We create a new one.")

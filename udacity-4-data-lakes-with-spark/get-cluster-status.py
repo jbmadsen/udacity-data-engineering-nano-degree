@@ -6,6 +6,9 @@ from configs import KEY, SECRET, DL_REGION, DL_NODE_TYPE, DL_NUM_SLAVES, S3_BUCK
 
 
 if __name__ == "__main__":
+    # Config
+    ignore_terminated_clusters = True
+
     # Creating resources/clients for infrastructure: EMR
     emr = boto3.client('emr',
                        region_name=DL_REGION, 
@@ -19,6 +22,11 @@ if __name__ == "__main__":
         print("Clusters exists:", )
         print("")
         for cluster in clusters['Clusters']:
+            if ignore_terminated_clusters:
+                if cluster['Status']['State'] in ['TERMINATED', 'TERMINATED_WITH_ERRORS']:
+                    print("Ignoring Cluster:", cluster['Name'], "(", cluster['Status']['State'], ")")
+                    print("")
+                    continue
             print("Id:", cluster['Id'])
             print("Name:", cluster['Name'])
             print("Status:")
