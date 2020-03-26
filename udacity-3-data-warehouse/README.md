@@ -1,6 +1,6 @@
 # Sparkify Amazon Redshift ETL
 
-This repository contains the first project submission for the Udacity Data Engineering Nanodegree. The project introduces the following concepts:
+This repository contains the project submission for the Udacity Data Engineering Nanodegree. The project introduces the following concepts:
 * Data modeling with [Amazon Redshift](https://aws.amazon.com/redshift/)
 * Building an ETL pipeline using [Python](https://www.python.org/)
 
