@@ -6,6 +6,9 @@ from configs import KEY, SECRET, DL_REGION, DL_NODE_TYPE, DL_NUM_SLAVES, S3_BUCK
 
 
 if __name__ == "__main__":
+    # Queries the status of all EMR clusters on AWS and prints it to console,
+    # with option to ignore terminated clusters
+
     # Config
     ignore_terminated_clusters = True
 

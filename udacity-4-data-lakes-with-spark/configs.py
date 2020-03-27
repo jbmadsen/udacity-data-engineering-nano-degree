@@ -4,7 +4,8 @@ import configparser
 
 
 # Set path to current directory
-os.chdir(os.path.dirname(sys.argv[0]))
+if os.path.dirname(sys.argv[0]):
+    os.chdir(os.path.dirname(sys.argv[0]))
 
 # Open and read the contents of the keys file
 iac_keys = configparser.ConfigParser()
@@ -23,9 +24,11 @@ DL_REGION       = iac_config.get("DL","DL_REGION")
 DL_NUM_SLAVES   = iac_config.get("DL","DL_NUM_SLAVES")
 DL_NODE_TYPE    = iac_config.get("DL","DL_NODE_TYPE")
 
+
 S3_BUCKET_NAME  = iac_config.get("S3","S3_BUCKET_NAME")
 S3_BUCKET_JOBS  = iac_config.get("S3","S3_BUCKET_JOBS")
 S3_BUCKET_LOGS  = iac_config.get("S3","S3_BUCKET_LOGS")
+S3_BUCKET_IN   = iac_config.get("S3","S3_BUCKET_IN")
 S3_BUCKET_OUT   = iac_config.get("S3","S3_BUCKET_OUT")
 
 # Delete unused objects

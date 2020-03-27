@@ -1,9 +1,9 @@
 # Sparkify Data Lakes with Spark
 
-TThis repository contains the project submission for the Udacity Data Engineering Nanodegree. The project introduces the following concepts:
+This repository contains the project submission for the Udacity Data Engineering Nanodegree. The project introduces the following concepts:
 * Data modeling with [Amazon EMR Clusters](https://aws.amazon.com/emr/)
 * Building an ETL pipeline using [Python](https://www.python.org/)
-* Loading data for processing and saving processed data to [Amazon S3](https://aws.amazon.com/S3/)
+* Loading data for processing and saving processed data to [Amazon S3](https://aws.amazon.com/S3/) 
 
 
 # Context 
@@ -42,16 +42,57 @@ In this project, we will need to load data from S3, process the data into analyt
 
 # How to run 
 
-TODO
+## Execute locally
 
-## Setup Configurations
+### Setup Configurations 
 
-TODO
+1) Make sure you have a local Spark installation running, and python dependencies installed
+2) Unpack the data in the [data/](./data/) folder using [unpack-local.sh](./unpack-local.sh)
+3) Fill in ```S3_BUCKET_IN``` and ```S3_BUCKET_OUT``` in [dl.cfg](./dl.cfg) with:
+    * S3_BUCKET_IN  = ./data/
+    * S3_BUCKET_OUT = ./output/
 
-## Execute ETL
+### Running
 
-TODO
+1) Run ```python etl.py``` in the terminal
+2) Output is saved to the selected S3_BUCKET_OUT location
+
+## Execute ETL on AWS EMR Cluster
+
+### Setup Configurations 
+
+1) Fill in everything in [dl.cfg](./dl.cfg), as well as your AWS key and secret in [keys.cfg](./keys.cfg).
+2) Create an EMR cluster, either through [AWS GUI](https://console.aws.amazon.com/elasticmapreduce/) or by executing ```python iac-create.py``` in the terminal
+
+### Running
+
+1) Once the cluster is up and running (you can verify through ```python get-cluster-status.py```), you submit [etl.py](./etl.py) to the cluster using ```python iac-submit-etl.py```
+    * This checks for a running cluster, uploads the needed files to S3, and adds the ETL process to the cluster as a job flow on the cluster
+    * Output of the ETL process is saved to the selected S3_BUCKET_OUT location
+2) [Optional]: You can terminate any running EMR cluster using ```python iac-terminate.py``` to make sure you don't get any unexpected bills
 
 # ETL Pipeline
 
-TODO
+## Loading data from S3
+
+The ETL process reads song and log data from S3, using the specifiers: 
+
+* Song data: ```S3_BUCKET_IN/song_data/*/*/*/*.json```
+* Log data: ```S3_BUCKET_IN/log_data/*/*/*.json```
+
+## Data Processing
+
+Data loaded from S3 is processed and transformed into five main Fact and Dimensional tables:
+
+| Table | Columns |
+| --- | --- |
+| songplays | *songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent* |
+| users | *user_id, first_name, last_name, gender, level* |
+| songs | *song_id, title, artist_id, year, duration* |
+| artists | *artist_id, name, location, lattitude, longitude* |
+| time | *start_time, hour, day, week, month, year, weekday* |
+
+## Loading data to S3
+
+Each of the five tables are loaded back to S3 as parquet files to individual folders per table: /songplays/, /users/, /songs/, /artists/, and /time/, in the S3 bucket ```S3_BUCKET_OUT```.
+

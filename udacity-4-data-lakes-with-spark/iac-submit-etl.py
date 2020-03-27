@@ -13,7 +13,8 @@ from configs import KEY, SECRET, DL_REGION, S3_BUCKET_JOBS, S3_BUCKET_LOGS, S3_B
 
 def main():
     """
-    Submit etl.py and required files to be run on active EMR cluster, if one such exists
+    Submit etl.py and required files to be run on active EMR cluster, 
+    if an active EMR cluster is running. Otherwise abort and do nothing.
     """
     # 1) Check we have a running cluster
 
@@ -93,12 +94,9 @@ def main():
 
     step_response = emr.add_job_flow_steps(JobFlowId=job_flow_id, 
                                            Steps=JobSteps)
-
     step_ids = step_response['StepIds']
-
+    
     print("Step IDs created:", step_ids)
-
-    pass
 
 
 if __name__ == "__main__":

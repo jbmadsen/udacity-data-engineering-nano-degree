@@ -7,7 +7,7 @@ from configs import KEY, SECRET, DL_REGION, DL_NODE_TYPE, DL_NUM_SLAVES, S3_BUCK
 
 def terminate_emr_clusters():
     """
-    Terminates existing EMR clusters, if any exists
+    Terminates existing EMR clusters
     """
 
     # Deleting job files from an S3 bucket

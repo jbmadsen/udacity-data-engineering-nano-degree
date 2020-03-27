@@ -3,7 +3,7 @@ import pyspark.sql as Spark
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 from datetime import datetime
-from configs import KEY, SECRET, S3_BUCKET_OUT
+from configs import KEY, SECRET, S3_BUCKET_OUT, S3_BUCKET_IN
 
 
 def create_spark_session():
@@ -147,7 +147,7 @@ def main():
     and saves it back to S3 in Parquet format
     """
     spark = create_spark_session()
-    input_data = "s3a://udacity-dend/"
+    input_data = S3_BUCKET_IN
     output_data = S3_BUCKET_OUT
     
     process_song_data(spark, input_data, output_data)    

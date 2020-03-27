@@ -7,7 +7,7 @@ from configs import KEY, SECRET, DL_REGION, DL_NODE_TYPE, DL_NUM_SLAVES, S3_BUCK
 
 def create_emr_cluster():
     """
-    Creates EMR cluster, if none exists already
+    Creates EMR cluster, if no active cluster is running
     """
 
     # Creating resources/clients for infrastructure: EMR
