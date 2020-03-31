@@ -25,7 +25,7 @@ Learn to build data infrastructure, an essential skill in Data Engineering. Desi
 
 ## Data Pipelines with Airflow
 
-* Project: Data Pipelines
+* Project: [Data Pipelines with Airflow](./udacity-5-data-pipelines-with-airflow/)
 
 
 ## Capstone Project
