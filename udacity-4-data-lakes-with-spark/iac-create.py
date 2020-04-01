@@ -58,10 +58,10 @@ def create_emr_cluster():
             ],
             Instances={
                 'InstanceGroups': instance_groups,
-                #'Ec2KeyName': '', # TODO
+                #'Ec2KeyName': '', # Not needed for how this process
                 'KeepJobFlowAliveWhenNoSteps': True,
                 'TerminationProtected': False,
-                #'Ec2SubnetId': 'subnet-id', # TODO
+                #'Ec2SubnetId': 'subnet-id', # Not needed for how this process
             },
             VisibleToAllUsers=True,
             JobFlowRole='EMR_EC2_DefaultRole',
