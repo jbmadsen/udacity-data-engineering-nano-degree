@@ -19,7 +19,7 @@ from helpers import SqlQueries
 
 default_args = {
     'owner': 'jbmadsen',
-    'start_date': datetime(2019, 1, 12),
+    'start_date': datetime(2019, 12, 1),
     'depends_on_past': False,
     'retries': 3,
     'retry_delay': timedelta(minutes=5),
@@ -31,26 +31,47 @@ default_args = {
 # DAG object creation
 # Runs every hour: https://crontab.guru/every-1-hour
 
-dag = DAG('sparkify_dag',
-          default_args=default_args,
-          description='Load and transform data in Redshift with Airflow',
-          schedule_interval='0 * * * *', 
-          max_active_runs=2
+dag = DAG(
+    'sparkify_dag',
+    default_args=default_args,
+    description='Load and transform data from S3 in Redshift with Airflow',
+    schedule_interval='0 * * * *', 
+    catchup=True,
+    max_active_runs=1
 )
 
 
 # Task Operators
 
-start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
+start_operator = DummyOperator(
+    task_id='Begin_execution',  
+    dag=dag
+)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
-    dag=dag
+    dag=dag,
+    provide_context=True,
+    table="events",
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials",
+    s3_bucket="udacity-dend",
+    s3_key="log_data",
+    region="us-west-2",
+    json="s3://udacity-dend/log_json_path.json"
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
-    dag=dag
+    dag=dag,
+    provide_context=True,
+    table="songs",
+    redshift_conn_id="redshift",
+    aws_credentials_id="aws_credentials",
+    s3_bucket="udacity-dend",
+    s3_key="song_data",
+    region="us-west-2",
+    json="auto"
 )
 
 load_songplays_table = LoadFactOperator(
@@ -83,7 +104,10 @@ run_quality_checks = DataQualityOperator(
     dag=dag
 )
 
-end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
+end_operator = DummyOperator(
+    task_id='Stop_execution',  
+    dag=dag
+)
 
 
 # Task Dependencies
