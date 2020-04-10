@@ -1,6 +1,7 @@
 # Airflow files
 udacity-5-data-pipelines-with-airflow/airflow.cfg
 udacity-5-data-pipelines-with-airflow/unittests.cfg
+udacity-5-data-pipelines-with-airflow/airflow-webserver.pid
 udacity-5-data-pipelines-with-airflow/logs/
 
 # Configs
