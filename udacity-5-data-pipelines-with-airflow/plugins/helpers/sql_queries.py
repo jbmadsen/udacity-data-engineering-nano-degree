@@ -56,7 +56,7 @@ class SqlQueries:
             artist_id VARCHAR, 
             session_id INT, 
             location VARCHAR, 
-            user_agent VARCHAR
+            user_agent VARCHAR,
             CONSTRAINT songplays_pkey PRIMARY KEY (songplay_id)
         )
         DISTSTYLE KEY
@@ -95,8 +95,7 @@ class SqlQueries:
         SORTKEY (start_time);
     """
 
-    songplay_table_insert = ("""
-        INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+    songplay_table_insert = """
         SELECT DISTINCT
             md5(events.sessionid || events.start_time) songplay_id,
             events.start_time, 
@@ -118,35 +117,31 @@ class SqlQueries:
             ON events.song = songs.title
                 AND events.artist = songs.artist_name
                 AND events.length = songs.duration;
-    """)
+    """
 
-    user_table_insert = ("""
-        INSERT INTO users (user_id, first_name, last_name, gender, level)
+    user_table_insert = """
         SELECT DISTINCT
             userid, firstname, lastname, gender, level
         FROM staging_events
         WHERE page='NextSong'
             AND userId IS NOT NULL;
-    """)
+    """
 
-    song_table_insert = ("""
-        INSERT INTO songs (song_id, title, artist_id, year, duration)
+    song_table_insert = """
         SELECT DISTINCT 
             song_id, title, artist_id, year, duration
         FROM staging_songs
         WHERE song_id IS NOT NULL;
-    """)
+    """
 
-    artist_table_insert = ("""
-        INSERT INTO artists (artist_id, name, location, latitude, longitude)
+    artist_table_insert = """
         SELECT DISTINCT 
             artist_id, artist_name, artist_location, artist_latitude, artist_longitude
         FROM staging_songs
         WHERE artist_id IS NOT NULL;
-    """)
+    """
 
-    time_table_insert = ("""
-        INSERT INTO time (start_time, hour, day, week, month, year, weekday)
+    time_table_insert = """
         SELECT DISTINCT 
             start_time, 
             EXTRACT(hour FROM start_time), 
@@ -156,4 +151,4 @@ class SqlQueries:
             EXTRACT(year FROM start_time), 
             EXTRACT(dayofweek FROM start_time)
         FROM songplays
-    """)
+    """

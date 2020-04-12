@@ -11,11 +11,11 @@ class ExecuteSQLOnRedshiftOperator(BaseOperator):
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",
-                 sql_statement="",
+                 sql_query="",
                  *args, **kwargs):
         super(ExecuteSQLOnRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
-        self.sql_statement = sql_statement
+        self.sql_query = sql_query
 
 
     def execute(self, context):
@@ -23,7 +23,7 @@ class ExecuteSQLOnRedshiftOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info("Running SQL statements on Redshift")
-        sql_commands = self.sql_statement.split(';')
+        sql_commands = self.sql_query.split(';')
         for command in sql_commands:
             if command.rstrip() != '':
                 redshift.run(command)

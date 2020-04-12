@@ -15,7 +15,10 @@ class StageToRedshiftOperator(BaseOperator):
         ACCESS_KEY_ID '{}'
         SECRET_ACCESS_KEY '{}'
         REGION '{}'
-        FORMAT AS json '{}';
+        FORMAT AS json '{}'
+        TRUNCATECOLUMNS 
+        BLANKSASNULL
+        EMPTYASNULL;
     """
 
     @apply_defaults
@@ -38,6 +41,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.table = table
         self.region = region
         self.json = json
+        #self.execution_date = kwargs.get('execution_date')
 
 
     def execute(self, context):
@@ -50,12 +54,12 @@ class StageToRedshiftOperator(BaseOperator):
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)        
         
         self.log.info("Clearing data from destination table")
-        redshift.run("DELETE FROM {}".format(self.table))
+        redshift.run(f"TRUNCATE TABLE {self.table};")
         
         self.log.info("Copying {self.table} from S3 to Redshift")
-        s3_path = f"s3://{self.s3_bucket}/{self.s3_key}"
+        s3_path = f"s3://{self.s3_bucket}/{self.s3_key.format(**context)}"
 
-        formatted_sql = self.copy_sql.format(
+        formatted_sql = self.copy_sql.format(   
             self.table,
             s3_path,
             credentials.access_key,

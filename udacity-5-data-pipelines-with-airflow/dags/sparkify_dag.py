@@ -54,7 +54,7 @@ create_staging_tables_redshift = ExecuteSQLOnRedshiftOperator(
     dag=dag,
     provide_context=True,
     redshift_conn_id="redshift",
-    sql_statement=SqlQueries.create_staging_tables
+    sql_query=SqlQueries.create_staging_tables
 )
 
 stage_events_to_redshift = StageToRedshiftOperator(
@@ -88,38 +88,78 @@ create_main_tables_redshift = ExecuteSQLOnRedshiftOperator(
     dag=dag,
     provide_context=True,
     redshift_conn_id="redshift",
-    sql_statement=SqlQueries.create_main_tables
+    sql_query=SqlQueries.create_main_tables
 )
 
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
-    dag=dag
+    dag=dag, 
+    provide_context=True,
+    table="songplays",
+    truncate_table=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    sql_query=SqlQueries.songplay_table_insert
 )
 
 load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
-    dag=dag
+    dag=dag, 
+    provide_context=True,
+    table="users",
+    truncate_table=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    sql_query=SqlQueries.user_table_insert
 )
 
 load_song_dimension_table = LoadDimensionOperator(
     task_id='Load_song_dim_table',
-    dag=dag
+    dag=dag, 
+    provide_context=True,
+    table="songs",
+    truncate_table=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    sql_query=SqlQueries.song_table_insert
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
     task_id='Load_artist_dim_table',
-    dag=dag
+    dag=dag, 
+    provide_context=True,
+    table="artists",
+    truncate_table=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    sql_query=SqlQueries.artist_table_insert
 )
 
 load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
-    dag=dag
+    dag=dag, 
+    provide_context=True,
+    table="time",
+    truncate_table=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    sql_query=SqlQueries.time_table_insert
 )
 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
-    dag=dag
+    dag=dag,
+    provide_context=True,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id='redshift',
+    tables= [
+                { "table": "songplays", "key": "songplay_id" },
+                { "table": "users", "key": "user_id" },
+                { "table": "song", "key": "song_id" },
+                { "table": "artist", "key": "artist_id" },
+                { "table": "time", "key": "start_time" },
+            ]
 )
 
 end_operator = DummyOperator(
