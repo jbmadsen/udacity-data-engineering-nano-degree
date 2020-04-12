@@ -3,6 +3,7 @@ udacity-5-data-pipelines-with-airflow/airflow.cfg
 udacity-5-data-pipelines-with-airflow/unittests.cfg
 udacity-5-data-pipelines-with-airflow/airflow-webserver.pid
 udacity-5-data-pipelines-with-airflow/logs/
+udacity-5-data-pipelines-with-airflow/.local/
 
 # Configs
 udacity-3-data-warehouse/dwh-ioc.cfg
