@@ -2,7 +2,8 @@ import os
 from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators import (StageToRedshiftOperator, 
+from airflow.operators import (ExecuteSQLOnRedshiftOperator,
+                               StageToRedshiftOperator, 
                                LoadFactOperator, 
                                LoadDimensionOperator,
                                DataQualityOperator)
@@ -48,11 +49,19 @@ start_operator = DummyOperator(
     dag=dag
 )
 
+create_tables_redshift = ExecuteSQLOnRedshiftOperator(
+    task_id='Create_staging_tables',
+    dag=dag,
+    provide_context=True,
+    redshift_conn_id="redshift",
+    sql_statement=SqlQueries.create_staging_tables
+)
+
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
     provide_context=True,
-    table="events",
+    table="staging_events",
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     s3_bucket="udacity-dend",
@@ -65,7 +74,7 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
     provide_context=True,
-    table="songs",
+    table="staging_songs",
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     s3_bucket="udacity-dend",
@@ -112,7 +121,9 @@ end_operator = DummyOperator(
 
 # Task Dependencies
 
-start_operator >> [stage_events_to_redshift, stage_songs_to_redshift]
+start_operator >> create_tables_redshift
+
+create_tables_redshift >> [stage_events_to_redshift, stage_songs_to_redshift]
 
 [stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table
 
