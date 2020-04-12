@@ -151,15 +151,14 @@ run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
     dag=dag,
     provide_context=True,
-    aws_credentials_id="aws_credentials",
     redshift_conn_id='redshift',
-    tables= [
-                { "table": "songplays", "key": "songplay_id" },
-                { "table": "users", "key": "user_id" },
-                { "table": "song", "key": "song_id" },
-                { "table": "artist", "key": "artist_id" },
-                { "table": "time", "key": "start_time" },
-            ]
+    tables=[
+               { "table": "songplays", "key": "songplay_id" },
+               { "table": "users", "key": "user_id" },
+               { "table": "songs", "key": "song_id" },
+               { "table": "artists", "key": "artist_id" },
+               { "table": "time", "key": "start_time" },
+           ]
 )
 
 end_operator = DummyOperator(
