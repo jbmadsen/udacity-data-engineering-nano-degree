@@ -1,5 +1,6 @@
 class SqlQueries:
     create_staging_tables = """
+        DROP TABLE IF EXISTS public.staging_events;
         CREATE TABLE IF NOT EXISTS public.staging_events (
             artist varchar(256),
             auth varchar(256),
@@ -21,6 +22,7 @@ class SqlQueries:
             userid int4
         );
 
+        DROP TABLE IF EXISTS public.staging_songs;
         CREATE TABLE IF NOT EXISTS public.staging_songs (
             num_songs int4,
             artist_id varchar(256),
@@ -35,8 +37,67 @@ class SqlQueries:
         );
     """
 
+    create_main_tables = """
+        CREATE TABLE IF NOT EXISTS public.artists (
+            artist_id VARCHAR PRIMARY KEY, 
+            name VARCHAR,
+            location VARCHAR,
+            latitude FLOAT,
+            longitude FLOAT
+        )
+        SORTKEY (artist_id);
+
+        CREATE TABLE IF NOT EXISTS public.songplays (
+            songplay_id VARCHAR(32) NOT NULL,
+            start_time TIMESTAMP,
+            user_id INT, 
+            level VARCHAR, 
+            song_id VARCHAR, 
+            artist_id VARCHAR, 
+            session_id INT, 
+            location VARCHAR, 
+            user_agent VARCHAR
+            CONSTRAINT songplays_pkey PRIMARY KEY (songplay_id)
+        )
+        DISTSTYLE KEY
+        DISTKEY (start_time)
+        SORTKEY (start_time);
+
+        CREATE TABLE IF NOT EXISTS public.songs (
+            song_id VARCHAR PRIMARY KEY, 
+            title VARCHAR,
+            artist_id VARCHAR,
+            year INT,
+            duration FLOAT
+        )
+        SORTKEY (song_id);
+
+        CREATE TABLE IF NOT EXISTS public.users (
+            user_id INT PRIMARY KEY,
+            first_name VARCHAR,
+            last_name VARCHAR,
+            gender VARCHAR,
+            level VARCHAR
+        )
+        SORTKEY (user_id);
+
+        CREATE TABLE IF NOT EXISTS public.time (
+            start_time TIMESTAMP PRIMARY KEY, 
+            hour INT,
+            day INT,
+            week INT,
+            month INT,
+            year INT,
+            weekday INT
+        )
+        DISTSTYLE KEY
+        DISTKEY (start_time)
+        SORTKEY (start_time);
+    """
+
     songplay_table_insert = ("""
-        SELECT
+        INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
+        SELECT DISTINCT
             md5(events.sessionid || events.start_time) songplay_id,
             events.start_time, 
             events.userid, 
@@ -56,33 +117,43 @@ class SqlQueries:
         LEFT JOIN staging_songs songs
             ON events.song = songs.title
                 AND events.artist = songs.artist_name
-                AND events.length = songs.duration
+                AND events.length = songs.duration;
     """)
 
     user_table_insert = ("""
-        SELECT distinct userid, firstname, lastname, gender, level
+        INSERT INTO users (user_id, first_name, last_name, gender, level)
+        SELECT DISTINCT
+            userid, firstname, lastname, gender, level
         FROM staging_events
         WHERE page='NextSong'
+            AND userId IS NOT NULL;
     """)
 
     song_table_insert = ("""
-        SELECT distinct song_id, title, artist_id, year, duration
+        INSERT INTO songs (song_id, title, artist_id, year, duration)
+        SELECT DISTINCT 
+            song_id, title, artist_id, year, duration
         FROM staging_songs
+        WHERE song_id IS NOT NULL;
     """)
 
     artist_table_insert = ("""
-        SELECT distinct artist_id, artist_name, artist_location, artist_latitude, artist_longitude
+        INSERT INTO artists (artist_id, name, location, latitude, longitude)
+        SELECT DISTINCT 
+            artist_id, artist_name, artist_location, artist_latitude, artist_longitude
         FROM staging_songs
+        WHERE artist_id IS NOT NULL;
     """)
 
     time_table_insert = ("""
-        SELECT 
+        INSERT INTO time (start_time, hour, day, week, month, year, weekday)
+        SELECT DISTINCT 
             start_time, 
-            extract(hour from start_time), 
-            extract(day from start_time), 
-            extract(week from start_time), 
-            extract(month from start_time), 
-            extract(year from start_time), 
-            extract(dayofweek from start_time)
+            EXTRACT(hour FROM start_time), 
+            EXTRACT(day FROM start_time), 
+            EXTRACT(week FROM start_time), 
+            EXTRACT(month FROM start_time), 
+            EXTRACT(year FROM start_time), 
+            EXTRACT(dayofweek FROM start_time)
         FROM songplays
     """)

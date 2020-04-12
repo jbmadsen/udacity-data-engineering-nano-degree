@@ -49,7 +49,7 @@ start_operator = DummyOperator(
     dag=dag
 )
 
-create_tables_redshift = ExecuteSQLOnRedshiftOperator(
+create_staging_tables_redshift = ExecuteSQLOnRedshiftOperator(
     task_id='Create_staging_tables',
     dag=dag,
     provide_context=True,
@@ -82,6 +82,15 @@ stage_songs_to_redshift = StageToRedshiftOperator(
     region="us-west-2",
     json="auto"
 )
+
+create_main_tables_redshift = ExecuteSQLOnRedshiftOperator(
+    task_id='Create_main_tables',
+    dag=dag,
+    provide_context=True,
+    redshift_conn_id="redshift",
+    sql_statement=SqlQueries.create_main_tables
+)
+
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
@@ -121,11 +130,13 @@ end_operator = DummyOperator(
 
 # Task Dependencies
 
-start_operator >> create_tables_redshift
+start_operator >> create_staging_tables_redshift
 
-create_tables_redshift >> [stage_events_to_redshift, stage_songs_to_redshift]
+create_staging_tables_redshift >> [stage_events_to_redshift, stage_songs_to_redshift]
 
-[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table
+[stage_events_to_redshift, stage_songs_to_redshift] >> create_main_tables_redshift
+
+create_main_tables_redshift >> load_songplays_table
 
 load_songplays_table >> [load_user_dimension_table, 
                          load_song_dimension_table, 
