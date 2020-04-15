@@ -71,6 +71,17 @@ In this project, we will need to load data from S3, process the data into analyt
 
 ![DAG Flow](./assets/dag-flow.png)
 
+| Step | Description |
+| --- | --- |
+| Begin_execution | Dummy task with no action |
+| Create_staging_tables | Creates staging tables for loading data from S3 if not already exists, otherwise drops and re-create the table |
+| Stage_evenets, Stage_songs | Loads data from S3 into staging tables in parallel |
+| Create_main_tables | Creates staging tables for loading data from S3 if not already exists |
+| Load_songplays_fact_table | Transforms and loads data from staging tables into main fact table |
+| Load_user_dim_table, Load_time_dim_table, Load_artist_dim_table, Load_song_dim_table | Transforms and loads data from staging tables into main dimensional tables in parallel |
+| Run_data_quality_checks | Runs quality check on data loaded into main dimensional tables and fact table |
+| End_execution | Dummy task with no action |
+
 ## Loading data from S3
 
 The process reads song and log data from S3, using the specifiers: 
