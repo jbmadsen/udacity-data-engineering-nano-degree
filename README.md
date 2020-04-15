@@ -30,5 +30,5 @@ Learn to build data infrastructure, an essential skill in Data Engineering. Desi
 
 ## Capstone Project
 
-* Project: Data Engineering Capstone Project
+* Project: [Data Engineering Capstone Project](./udacity-6-capstone-project/)
 
