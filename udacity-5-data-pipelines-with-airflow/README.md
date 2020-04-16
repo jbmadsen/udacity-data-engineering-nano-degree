@@ -108,5 +108,5 @@ Two checks are made during the quality checks for each table:
 1) Checking that there are valid data in main tables
     * ```SELECT COUNT(*) FROM {table}``` should return > 0
 2) Checking that there are no invalid data in main tables
-    * ```SELECT COUNT(*) FROM {table} WHERE {table_id} IS NULL``` should return <= 0  
+    * ```SELECT COUNT(*) FROM {table} WHERE {table_id} IS NULL``` should return = 0  
 
