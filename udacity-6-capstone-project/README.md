@@ -1,5 +1,7 @@
 # Data Engineering Capstone Project
 
+The Capstone project can be found at: https://github.com/jbmadsen/ArXiv-Metadata-ETL
+
 ## Overview
 The purpose of the data engineering capstone project is to combine what I've learned throughout the program. In this project, I can define the scope and data for a project of my own design. I am expected to go through the same steps outlined below.
 
