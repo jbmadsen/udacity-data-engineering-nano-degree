@@ -1,4 +1,6 @@
-# Data Engineer Nano-degree Program
+# Udacity Data Engineer Nano-degree Program
+
+Repository for the Udacity Data Streaming Nano Degree.
 
 Link: [Udacity program page](https://www.udacity.com/course/data-engineer-nanodegree--nd027)
 
